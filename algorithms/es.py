@@ -85,8 +85,8 @@ def evolutionary_strategies(objective, bounds, n_iter, step_size, mu, lam, heter
         population.sort(key=get_score)
         # store info to graph
         data.append(population[0].score)
-        dic = {'Algorithm': ['genetic_algorithm'], 'Objective': [objective.__name__.capitalize()], 'Test': [num_test], 'Heterogeneity': [heterogeneity], 'Generation': [gen], 'Result': [population[0].score]}
-        table = concat([table, DataFrame(dic)])
+        dic = {'Algorithm': ['evolutionary_strategies'], 'Objective': [objective.__name__.capitalize()], 'Test': [num_test], 'Heterogeneity': [heterogeneity], 'Generation': [gen], 'Result': [population[0].score]}
+        table = concat([table, DataFrame(dic)], ignore_index=True)
         # check if this parent is the best solution ever seen
         if population[0].score < best_eval:
             best, best_eval = population[0].gen, population[0].score

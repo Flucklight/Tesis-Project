@@ -107,7 +107,7 @@ def genetic_algorithm(objective, bounds, n_iter, n_pop, r_cross, r_mut, alpha, h
         # store info to graph
         data.append(population[0].score)
         dic = {'Algorithm': ['genetic_algorithm'], 'Objective': [objective.__name__.capitalize()], 'Test': [num_test], 'Heterogeneity': [heterogeneity], 'Generation': [gen], 'Result': [population[0].score]}
-        table = concat([table, DataFrame(dic)])
+        table = concat([table, DataFrame(dic)], ignore_index=True)
         # check for new best solution
         if population[0].score < best_eval:
             best, best_eval = population[0].gen, population[0].score
