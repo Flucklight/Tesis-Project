@@ -97,12 +97,12 @@ def run(heterogeneity, method, function, n_test, show=True):
         if not os.path.exists('./results/{}/{}/Heterogeneity-{}'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100))):
             os.makedirs('./results/{}/{}/Heterogeneity-{}'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100)))
         # graph data
+        table.plot(x='Generation', y='Result')
+        pyplot.title('{} - {} - Heterogeneity {} - Test {}'.format(method.__name__.capitalize(), objective.__name__.capitalize(), heterogeneity, test))
+        pyplot.xlabel('Generation')
+        pyplot.ylabel('Best Individual Score')
+        pyplot.savefig('./results/{}/{}/Heterogeneity-{}/Test-{}.png'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100), test))
         if show:
-            table.plot(x='Generation', y='Result')
-            pyplot.title('{} - {} - Heterogeneity {} - Test {}'.format(method.__name__.capitalize(), objective.__name__.capitalize(), heterogeneity, test))
-            pyplot.xlabel('Generation')
-            pyplot.ylabel('Best Individual Score')
-            pyplot.savefig('./results/{}/{}/Heterogeneity-{}/Test-{}.png'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100), test))
             pyplot.show()
         # Append the results
         table.to_csv('./results/{}/{}/Heterogeneity-{}/Table-Test-{}.csv'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100), test))
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         for f in OBJECTIVES:
             h = 0.0
             while h <= 1.0:
-                r = run(h, m, f, t, show=True)
+                r = run(h, m, f, t, show=False)
                 result = concat([result, r], ignore_index=True)
                 h += 0.25
     result.to_csv('./results/Result-Table.csv')
