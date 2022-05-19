@@ -64,7 +64,7 @@ def get_bounds(function):
     return bounds
 
 
-def run(heterogeneity, method, function, show=True):
+def run(heterogeneity, method, function, n_test, show=True):
     # init variables
     best = []
     score = 0.0
@@ -79,8 +79,8 @@ def run(heterogeneity, method, function, show=True):
     n_iter = 1000
     # define the population size
     n_pop = 100
-    for test in range(1):
-        # the heterogeneity parameter bound in 0 to 1, 0 represent only the best a 1 only random subjects
+    for test in range(n_test):
+        # the heterogeneity parameter bound in 0 to 1, 0 represent only random subjects and 1 only the best subjects
         print('Heterogeneity {} Test {} Function {} Method {}'.format(heterogeneity, test, objective.__name__, method.__name__))
         if method.__name__ == 'genetic_algorithm':
             # perform the genetic algorithm search
@@ -93,7 +93,7 @@ def run(heterogeneity, method, function, show=True):
             best, score, data, table = method(objective, bounds, n_iter, n_pop, r_cross=0.8, r_mut=0.1, heterogeneity=heterogeneity, num_test=test)
         # show results
         print('Soluction: {} = {}\n'.format(best, score))
-        # create the directories to save de data
+        # create the directories to save the data
         if not os.path.exists('./results/{}/{}/Heterogeneity-{}'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100))):
             os.makedirs('./results/{}/{}/Heterogeneity-{}'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100)))
         # graph data
@@ -105,7 +105,7 @@ def run(heterogeneity, method, function, show=True):
             pyplot.savefig('./results/{}/{}/Heterogeneity-{}/Test-{}.png'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100), test))
             pyplot.show()
         # Append the results
-        table.to_csv('./results/{}/{}/Heterogeneity-{}/Table-Test{}.csv'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100), test))
+        table.to_csv('./results/{}/{}/Heterogeneity-{}/Table-Test-{}.csv'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100), test))
         info = concat([info, table], ignore_index=True)
     info.to_csv('./results/{}/{}/Heterogeneity-{}/Result-Table.csv'.format(method.__name__.capitalize(), objective.__name__.capitalize(), round(heterogeneity * 100)))
     return info
@@ -114,11 +114,12 @@ def run(heterogeneity, method, function, show=True):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     result = DataFrame()
+    t = 20
     for m in METHODS:
         for f in OBJECTIVES:
             h = 0.0
             while h <= 1.0:
-                r = run(h, m, f, show=True)
+                r = run(h, m, f, t, show=True)
                 result = concat([result, r], ignore_index=True)
                 h += 0.25
     result.to_csv('./results/Result-Table.csv')
