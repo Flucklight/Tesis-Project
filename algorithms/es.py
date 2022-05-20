@@ -1,6 +1,7 @@
 from numpy.random import randn
 from numpy.random import uniform
 from numpy.random import choice
+from numpy import asarray
 from numpy import ceil
 from numpy import floor
 from pandas import DataFrame
@@ -13,7 +14,7 @@ def generate(bounds):
     data = list()
     for s in bounds:
         data.append(uniform(s[0], s[1]))
-    return Individual(data)
+    return Individual(asarray(data))
 
 
 # evaluate a individual
@@ -39,7 +40,6 @@ def in_bounds(point, bounds):
 # evolution strategy (mu, lambda) algorithm
 def evolutionary_strategies(objective, bounds, n_iter, step_size, mu, lam, heterogeneity, num_test):
     # store information
-    data = list()
     table = DataFrame()
     # calculate the number of children per parent
     n_children = int(lam / mu)
@@ -51,7 +51,7 @@ def evolutionary_strategies(objective, bounds, n_iter, step_size, mu, lam, heter
     # rank individuals in ascending order
     population.sort(key=get_score)
     # trackers for the best solutions
-    best, best_eval = population[0].gen, population[0].score
+    best, best_eval = population[0].gen.tolist(), population[0].score
     # perform the search
     for gen in range(n_iter):
         # create children from parents
@@ -84,11 +84,10 @@ def evolutionary_strategies(objective, bounds, n_iter, step_size, mu, lam, heter
         # order by the best
         population.sort(key=get_score)
         # store info to graph
-        data.append(population[0].score)
         dic = {'Algorithm': ['evolutionary_strategies'], 'Objective': [objective.__name__.capitalize()], 'Test': [num_test], 'Heterogeneity': [heterogeneity], 'Generation': [gen], 'Result': [population[0].score]}
         table = concat([table, DataFrame(dic)], ignore_index=True)
         # check if this parent is the best solution ever seen
         if population[0].score < best_eval:
-            best, best_eval = population[0].gen, population[0].score
-            print('Generation {} -> new best {} = {}'.format(gen, best, best_eval))
-    return [best, best_eval, data, table]
+            best, best_eval = population[0].gen.tolist(), population[0].score
+            print('\tGeneration {} -> new best {} = {}'.format(gen, best, best_eval))
+    return [best, best_eval, table]

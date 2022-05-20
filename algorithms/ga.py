@@ -1,6 +1,8 @@
 from numpy.random import uniform
 from numpy.random import rand
 from numpy.random import choice
+from numpy import asarray
+from numpy import concatenate
 from numpy import ceil
 from numpy import floor
 from pandas import DataFrame
@@ -13,7 +15,7 @@ def generate(bounds):
     data = list()
     for s in bounds:
         data.append(uniform(s[0], s[1]))
-    return Individual(data)
+    return Individual(asarray(data))
 
 
 # evaluate a individual
@@ -26,27 +28,17 @@ def get_score(ind):
     return ind.score
 
 
-# elitism selection
-def selection(pop, scores):
-    # first select ind
-    selection_ix = 0
-    for ix in range(len(pop)):
-        # check if better
-        if scores[ix] < scores[selection_ix]:
-            selection_ix = ix
-    selected = pop.pop(selection_ix)
-    return selected
-
-
 # crossover two parents to create two children
 def crossover(p1, p2, r_cross, alpha):
     # children are copies of parents by default
     c1, c2 = p1.gen.copy(), p2.gen.copy()
     # check for recombination
     if rand() < r_cross:
+        # point of cross
+        cp1, cp2 = round(len(p1.gen) * 0.5), round(len(p2.gen) * 0.5)
         # perform crossover
-        c1 = [p1.gen[0] - alpha * (p2.gen[0] - p1.gen[1]), p1.gen[1] - alpha * (p2.gen[1] - p1.gen[1])]
-        c2 = [p2.gen[0] - alpha * (p1.gen[0] - p2.gen[1]), p2.gen[1] - alpha * (p1.gen[1] - p2.gen[1])]
+        c1 = concatenate((p1.gen[:cp1] - alpha * (p2.gen[:cp2] - p1.gen[cp1:]), p1.gen[cp1:] - alpha * (p2.gen[cp2:] - p1.gen[cp1:])), axis=None)
+        c2 = concatenate((p2.gen[:cp2] - alpha * (p1.gen[:cp1] - p2.gen[cp2:]), p2.gen[cp2:] - alpha * (p1.gen[cp1:] - p2.gen[cp2:])), axis=None)
     return [Individual(c1), Individual(c2)]
 
 
@@ -62,7 +54,6 @@ def mutation(c, bounds, r_mut):
 # genetic algorithm
 def genetic_algorithm(objective, bounds, n_iter, n_pop, r_cross, r_mut, alpha, heterogeneity, num_test):
     # store information
-    data = list()
     table = DataFrame()
     # initial population of random values
     population = [generate(bounds) for _ in range(n_pop)]
@@ -71,7 +62,7 @@ def genetic_algorithm(objective, bounds, n_iter, n_pop, r_cross, r_mut, alpha, h
         evaluate(ind, objective)
     population.sort(key=get_score)
     # keep track of best solution
-    best, best_eval = population[0].gen, population[0].score
+    best, best_eval = population[0].gen.tolist(), population[0].score
     # enumerate generations
     for gen in range(n_iter):
         # select parents
@@ -105,11 +96,10 @@ def genetic_algorithm(objective, bounds, n_iter, n_pop, r_cross, r_mut, alpha, h
         # order by the best
         population.sort(key=get_score)
         # store info to graph
-        data.append(population[0].score)
         dic = {'Algorithm': ['genetic_algorithm'], 'Objective': [objective.__name__.capitalize()], 'Test': [num_test], 'Heterogeneity': [heterogeneity], 'Generation': [gen], 'Result': [population[0].score]}
         table = concat([table, DataFrame(dic)], ignore_index=True)
         # check for new best solution
         if population[0].score < best_eval:
-            best, best_eval = population[0].gen, population[0].score
-            print('Generation {} -> new best {} = {}'.format(gen, best, best_eval))
-    return [best, best_eval, data, table]
+            best, best_eval = population[0].gen.tolist(), population[0].score
+            print('\tGeneration {} -> new best {} = {}'.format(gen, best, best_eval))
+    return [best, best_eval, table]

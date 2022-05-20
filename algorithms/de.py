@@ -15,7 +15,7 @@ def generate(bounds):
     data = list()
     for s in bounds:
         data.append(uniform(s[0], s[1]))
-    return Individual(data)
+    return Individual(asarray(data))
 
 
 # evaluate a individual
@@ -30,12 +30,12 @@ def get_score(ind):
 
 # define mutation operation
 def mutation(x, r_mut):
-    return (asarray(x[0].gen) + r_mut * (asarray(x[1].gen) - asarray(x[2].gen))).tolist()
+    return x[0].gen + r_mut * (x[1].gen - x[2].gen)
 
 
 # define boundary check operation
 def check_bounds(mutated, bounds):
-    return [clip(mutated[i], bounds[i, 0], bounds[i, 1]) for i in range(len(bounds))]
+    return asarray([clip(mutated[i], bounds[i, 0], bounds[i, 1]) for i in range(len(bounds))])
 
 
 # define crossover operation
@@ -44,7 +44,7 @@ def crossover(mutated, target, dims, cr):
     p = rand(dims)
     # generate trial vector by binomial crossover
     trial = [mutated[i] if p[i] < cr else target.gen[i] for i in range(dims)]
-    return Individual(trial)
+    return Individual(asarray(trial))
 
 
 def differential_evolution(objective, bounds, n_iter, n_pop, r_mut, r_cross, heterogeneity, num_test):
@@ -56,9 +56,8 @@ def differential_evolution(objective, bounds, n_iter, n_pop, r_mut, r_cross, het
     # find the best performing vector
     population.sort(key=get_score)
     # find the best performing vector of initial population
-    best, best_eval = population[0].gen, population[0].score
+    best, best_eval = population[0].gen.tolist(), population[0].score
     # initialise list to store the objective function value at each iteration
-    data = list()
     table = DataFrame()
     # store the children
     children = list()
@@ -96,11 +95,10 @@ def differential_evolution(objective, bounds, n_iter, n_pop, r_mut, r_cross, het
         # order by the best
         population.sort(key=get_score)
         # store info to graph
-        data.append(population[0].score)
         dic = {'Algorithm': ['differential_evolution'], 'Objective': [objective.__name__.capitalize()], 'Test': [num_test], 'Heterogeneity': [heterogeneity], 'Generation': [gen], 'Result': [population[0].score]}
         table = concat([table, DataFrame(dic)], ignore_index=True)
         # check for new best solution
         if population[0].score < best_eval:
-            best, best_eval = population[0].gen, population[0].score
-            print('Generation {} -> new best {} = {}'.format(gen, best, best_eval))
-    return [best, best_eval, data, table]
+            best, best_eval = population[0].gen.tolist(), population[0].score
+            print('\tGeneration {} -> new best {} = {}'.format(gen, best, best_eval))
+    return [best, best_eval, table]
